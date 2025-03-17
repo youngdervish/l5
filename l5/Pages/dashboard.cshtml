@@ -1,0 +1,38 @@
+﻿@page "/Dashboard"
+@model l5.Pages.Dashboard
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="./css/dashboard.css">
+</head>
+<body>
+    <div class="overlay" id="refresh-overlay" style="display: none;">
+        <div class="modal">
+            <p>Your session is about to expire. Would you like to refresh?</p>
+            <button id="refreshBtn">Refresh</button>
+            <button id="cancelBtn">Cancel</button>
+        </div>
+    </div>
+
+    <h1>Choose a Database:</h1>
+    <div class="db-container">
+        @if (Model.UserRole == "Administrator")
+        {
+            <button class="db-button" onclick="location.href='/UserDB.html'">User Database</button>
+        }
+        <button class="db-button" onclick="location.href='/BookDB.html'">Book Database</button>
+        <button class="db-button" id="logoutBtn">Log Out</button>
+    </div>
+
+    <p id="countdown"><span id="countdownTimer"></span></p>
+
+    <script type="module" src="/js/dashboard.js"></script>
+</body>
+</html>

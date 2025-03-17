@@ -1,0 +1,98 @@
+﻿body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none; /* Initially hidden */
+    z-index: 9999;
+    /* Center the content inside */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.db-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.db-button {
+    padding: 15px 30px;
+    font-size: 18px;
+    cursor: pointer;
+    border: 2px solid #333;
+    background-color: #f4f4f4;
+    transition: background-color 0.3s;
+}
+
+    .db-button:hover {
+        background-color: #ddd;
+    }
+
+#countdown {
+    margin-top: 30px;
+    font-size: 18px;
+    color: #ff0000;
+}
+
+/* Updated modal styles */
+#renewal-popup {
+    background-color: white;
+    padding: 20px;
+    border: 2px solid black;
+    border-radius: 10px; /* Smooth edges */
+    text-align: center;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Ensures it remains centered */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+    #renewal-popup p {
+        margin-bottom: 15px;
+        font-size: 16px;
+    }
+
+    #renewal-popup button {
+        margin: 10px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+/* Button Colors */
+#refreshBtn {
+    background-color: #28a745; /* Green */
+    color: white;
+}
+
+    #refreshBtn:hover {
+        background-color: #218838;
+    }
+
+#cancelBtn {
+    background-color: #dc3545; /* Red */
+    color: white;
+}
+
+    #cancelBtn:hover {
+        background-color: #c82333;
+    }

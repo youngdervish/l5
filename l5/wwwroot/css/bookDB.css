@@ -1,0 +1,133 @@
+﻿/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1a0000;
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+}
+
+/* Overlay Styles */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal {
+    background: #330000;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    text-align: center;
+}
+
+/* Buttons */
+button {
+    background-color: #660000;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+    button:hover {
+        background-color: #990000;
+    }
+
+/* Container */
+.container {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+    padding-top: 20px;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #330000;
+    padding: 15px;
+    border-bottom: 2px solid #660000;
+}
+
+h1 {
+    margin: 0;
+    color: #ff6666;
+}
+
+/* Controls */
+.controls {
+    margin: 20px 0;
+}
+
+    .controls button,
+    .controls input {
+        margin: 5px;
+    }
+
+input[type="text"] {
+    padding: 8px;
+    border: 1px solid #660000;
+    border-radius: 5px;
+    background: #330000;
+    color: white;
+}
+
+/* Table */
+.book-list {
+    margin-top: 20px;
+    width: 100%;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #330000;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #660000;
+    text-align: left;
+}
+
+th {
+    background: #660000;
+}
+
+tr:hover {
+    background: #550000;
+}
+
+/* Logout & Back Buttons */
+#logoutBtn, #back {
+    background: #cc0000;
+}
+
+    #logoutBtn:hover, #back:hover {
+        background: #ff0000;
+    }
+
+/*a {
+    color: #ffffff;*/ /* White color */
+/*}*/
+
+.book-list a {
+    color: #ffffff; /* White color for titles in the book list */
+}
+
+.hidden-id {
+    display: none;
+}
+

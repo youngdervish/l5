@@ -1,0 +1,82 @@
+Q's
+1) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public async Task<IDataResult<LoginResponseDto>> CreateTokenAsync(UserToListDto dto)
+    {
+        var securityHelper = new SecurityHelper(_configSettings, _utilService);
+        var accessTokenExpireDate =
+            DateTime.UtcNow.AddHours(_configSettings.AuthSettings.TokenExpirationTimeInHours);
+
+        var loginResponseDto = new LoginResponseDto()
+        {
+            User = dto,
+            AccessToken = securityHelper.CreateTokenForUser(dto, accessTokenExpireDate),
+            AccessTokenExpireDate = accessTokenExpireDate,
+            RefreshToken = _utilService.GenerateRefreshToken(),
+            RefreshTokenExpireDate = accessTokenExpireDate.AddMinutes(_configSettings.AuthSettings.RefreshTokenAdditionalMinutes)
+        };
+
+        await AddAsync(loginResponseDto);
+
+        return new SuccessDataResult<LoginResponseDto>(loginResponseDto, EMessages.Success.Translate());
+    }
+
+
+public string CreateTokenForUser(UserToListDto userDto, DateTime expirationDate)
+    {
+        var claims = new List<Claim>
+        {
+            new(_configSettings.AuthSettings.TokenUserIdKey, _utilService.Encrypt(userDto.Id.ToString())),
+            new(ClaimTypes.Name, userDto.Username),
+            new(_configSettings.AuthSettings.Role, userDto.Role.HasValue ? userDto.Role.ToString() : string.Empty),
+            new(_configSettings.AuthSettings.TokenCompanyIdKey,
+                userDto.Organization != null ? _utilService.Encrypt(userDto.Organization.Id.ToString()) : string.Empty),
+            new(ClaimTypes.Expiration, expirationDate.ToString(CultureInfo.InvariantCulture))
+        };
+        //claims.Add(new Claim(_configSettings.AuthSettings.TokenCompanyIdKey, userDto.CompanyId.ToString()!));
+        //claims.Add(new Claim(_configSettings.AuthSettings.TokenUserTypeKey, userDto.Type.ToString()));
+
+        var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configSettings.AuthSettings.SecretKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = expirationDate,
+            SigningCredentials = creds
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+
+        return tokenHandler.WriteToken(token);
+    }

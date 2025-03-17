@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Database</title>
+    <link rel="stylesheet" href="/css/bookDB.css">
+</head>
+<body>
+
+    <div class="overlay" id="refresh-overlay" style="display: none;">
+        <div class="modal">
+            <p>Your session is about to expire. Would you like to refresh?</p>
+            <button id="refreshBtn">Refresh</button>
+            <button id="cancelBtn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Add Book Overlay -->
+    <div class="overlay" id="add-book-overlay" style="display: none;">
+        <div class="modal">
+            <header>
+                <button id="add-book-confirm" class="confirm-btn">Add</button>
+                <button id="cancel-add-book" class="cancel-btn">Cancel</button>
+            </header>
+
+            <form id="add-book-form">
+                <div class="input-group">
+                    <label for="book-title">Title (Required)</label>
+                    <input type="text" id="book-title" required>
+                </div>
+                <div class="input-group">
+                    <label for="book-author">Author (Required)</label>
+                    <input type="text" id="book-author" required>
+                </div>
+                <div class="input-group">
+                    <label for="book-year">Year (Required)</label>
+                    <input type="number" id="book-year" required>
+                </div>
+                <div class="input-group">
+                    <label for="book-quantity">Quantity (Required)</label>
+                    <input type="number" id="book-quantity" required>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Update Book Overlay -->
+    <div class="overlay" id="update-book-overlay" style="display: none;">
+        <div class="modal">
+            <header>
+                <button id="update-book-confirm" class="confirm-btn">Update</button>
+                <button id="cancel-update-book" class="cancel-btn">Cancel</button>
+            </header>
+
+            <form id="update-book-form">
+                <div class="input-group">
+                    <label for="update-book-title">Title (Required)</label>
+                    <input type="text" id="update-book-title" required>
+                </div>
+                <div class="input-group">
+                    <label for="update-book-author">Author (Required)</label>
+                    <input type="text" id="update-book-author" required>
+                </div>
+                <div class="input-group">
+                    <label for="update-book-year">Year (Required)</label>
+                    <input type="number" id="update-book-year" required>
+                </div>
+                <div class="input-group">
+                    <label for="update-book-quantity">Quantity (Required)</label>
+                    <input type="number" id="update-book-quantity" required>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Book Database</h1>
+            <div class="token-expiry">
+                <span id="countdownTimer" class="safe"></span>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button id="add-book">Add</button>
+            <button id="remove-book">Remove</button>
+            <button id="borrow-book">Borrow</button>
+            <button id="return-book">Return</button>
+            <input type="text" id="search-input" placeholder="Search by title">
+            <button id="search-book">Search</button>
+            <button id="back">Back</button>
+            <button id="logoutBtn">Log Out</button>
+        </div>
+
+        <div class="book-list">
+            <table>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select-all"></th>
+                        <th>Title</th>
+                        <th style="display: none">ID</th>
+                        <th>Author</th>
+                        <th>Year</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody id="book-table-body">
+                    <!-- Book rows will be populated here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<!--    <script type="module" src="/js/dashboard.js"></script>-->
+    <script type="module" src="/js/bookDB.js"></script>
+</body>
+</html>

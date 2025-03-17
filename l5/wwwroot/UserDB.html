@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Database</title>
+    <link rel="stylesheet" href="/css/userDB.css">
+</head>
+<body>
+
+    <div class="overlay" id="refresh-overlay" style="display: none;">
+        <div class="modal">
+            <p>Your session is about to expire. Would you like to refresh?</p>
+            <button id="refreshBtn">Refresh</button>
+            <button id="cancelBtn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Add User Overlay -->
+    <div class="overlay" id="add-user-overlay" style="display: none;">
+        <div class="modal">
+            <header>
+                <button id="add-user-confirm" class="confirm-btn">Add</button>
+                <button id="cancel-add-user" class="cancel-btn">Cancel</button>
+            </header>
+
+            <form id="add-user-form">
+                <div class="input-group">
+                    <label for="username">Username (Required)</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password (Required)</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="input-group">
+                    <label for="role">Role (Required)</label>
+                    <select id="role" required>
+                        <option value="">Select Role</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Librarian">Librarian</option>
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Teacher</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email (Optional)</label>
+                    <input type="email" id="email">
+                </div>
+                <div class="input-group">
+                    <label for="phone">Phone (Optional)</label>
+                    <input type="tel" id="phone">
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Update User Overlay -->
+    <div class="overlay" id="update-user-overlay" style="display: none;">
+        <div class="modal">
+            <header>
+                <button id="update-user-confirm" class="confirm-btn">Update</button>
+                <button id="cancel-update-user" class="cancel-btn">Cancel</button>
+            </header>
+
+            <form id="update-user-form">
+                <div class="input-group">
+                    <label for="update-username">Username (Required)</label>
+                    <input type="text" id="update-username" required readonly>
+                </div>
+                <div class="input-group">
+                    <label for="update-password">Password (Required)</label>
+                    <input type="password" id="update-password" required>
+                </div>
+                <div class="input-group">
+                    <label for="update-role">Role (Required)</label>
+                    <select id="update-role" required>
+                        <option value="">Select Role</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Librarian">Librarian</option>
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Teacher</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="update-email">Email (Optional)</label>
+                    <input type="email" id="update-email">
+                </div>
+                <div class="input-group">
+                    <label for="update-phoneNumber">Phone (Optional)</label>
+                    <input type="tel" id="update-phoneNumber">
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="container">
+        <header>
+            <h1>User Database</h1>
+            <div class="token-expiry">
+                <span id="countdownTimer" class="safe"></span>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button id="add-user">Add</button>
+            <button id="remove-user">Remove</button>
+            <input type="text" id="search-input" placeholder="Search by username">
+            <button id="search-user">Search</button>
+            <button id="back">Back</button>
+            <button id="logoutBtn">Log Out</button>
+        </div>
+
+        <div class="user-list">
+            <table>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select-all"></th>
+                        <th>Username</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table-body">
+                    <!-- User rows will be populated here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!--<script type="module" src="/js/dashboard.js"></script>-->
+    <script type="module" src="/js/userDB.js"></script>
+</body>
+</html>
