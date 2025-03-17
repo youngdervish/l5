@@ -326,7 +326,6 @@ namespace l5.Controllers
         }
     }
 }
-
 //var booksToReturn = await _context.BorrowedBooks
 //    .Where(bb => bb.Username == username && titles.Contains(bb.BookId.ToString()))
 //    .ToListAsync();
