@@ -82,19 +82,33 @@ namespace l5.Controllers
         [HttpGet("{title}")]
         public async Task<ActionResult<Book>> GetBook(string title)
         {
-            //var book = await _context.Books.FindAsync(title);
-            var book = await _context.Books.FirstOrDefaultAsync(b => b.Title == title);
-            if (book == null) return NotFound();
+            //var book = await _context.Books.FirstOrDefaultAsync(b => b.Title == title);
+            //if (book == null) return NotFound();
 
-            return new Book
+            //return new Book
+            //{
+            //    Title = book.Title,
+            //    Id=book.Id,
+            //    Author = book.Author,
+            //    Year = book.Year,
+            //    //Quantity = b.Quantity - _context.BorrowedBooks.Count(x => x.BookId == b.Id)
+            //    Quantity = book.Quantity - _context.BorrowedBooks.Count(x => x.Book.Title == book.Title)
+            //};
+
+            var books = await _context.Books.Where(b => b.Title.Contains(title)).ToListAsync();
+
+            if (books == null || !books.Any()) return NotFound();
+
+            var result = books.Select(book => new Book
             {
                 Title = book.Title,
-                Id=book.Id,
+                Id = book.Id,
                 Author = book.Author,
                 Year = book.Year,
-                //Quantity = b.Quantity - _context.BorrowedBooks.Count(x => x.BookId == b.Id)
-                Quantity = book.Quantity - _context.BorrowedBooks.Count(x => x.Book.Title == book.Title)
-            };
+                Quantity = book.Quantity - _context.BorrowedBooks.Count(x => x.BookId == book.Id)
+            }).ToList();
+
+            return Ok(result);
         }
 
         [HttpPost("add-book")]
