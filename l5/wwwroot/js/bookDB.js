@@ -358,7 +358,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const searchInput = document.getElementById("search-input").value.trim();
         if (!searchInput) {
             alert("Please enter a title to search.");
-            loadBooks();
+            loadBooks();  // Assuming this loads all books when no search is made
             return;
         }
 
@@ -370,20 +370,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             if (!response.ok) {
                 if (response.status === 404) {
-                    alert("Book not found.");
+                    alert("No books found matching the title.");
                 } else {
                     alert(`Error: ${response.statusText}`);
                 }
                 return;
             }
 
-            const book = await response.json();
-            console.log("Searched Book: ", book); // Log the response
-            displaySearchedBook(book);
+            const books = await response.json();  // Now expecting an array of books
+            console.log("Searched Books: ", books); // Log the response for debugging
+
+            if (books.length === 0) {
+                alert("No books found matching the title.");
+                return;
+            }
+
+            displaySearchedBooks(books);  // Assuming this function can display multiple books
 
         } catch (error) {
-            console.error("Error fetching book:", error);
-            alert("An error occurred while fetching the book.");
+            console.error("Error fetching books:", error);
+            alert("An error occurred while fetching the books.");
         }
     }
 
@@ -459,29 +465,33 @@ document.addEventListener("DOMContentLoaded", async () => {
         
     }
 
-    function displaySearchedBook(book) {
+    function displaySearchedBooks(books) {
         const tableBody = document.getElementById("book-table-body");
 
         // Clear existing rows (optional, depends on desired behavior)
         tableBody.innerHTML = "";
 
-        // Create a new row
-        const row = document.createElement("tr");
+        console.log("Loading book quantity: ", books.length);
 
-        console.log("Loading book quantity: ", book.quantity);
+        books.forEach(book => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td><input type="checkbox" class="select-book"></td>
+                <td><a href="#" class="update-book-link" data-title="${book.title}" data-author="${book.author}" data-year="${book.year}" data-quantity="${book.quantity}">
+                    ${book.title}
+                </a></td>
+                <td style="display: none">${book.id}</td>
+                <td>${book.author}</td>
+                <td>${book.year}</td>
+                <td>${book.quantity}</td>
+            `;
 
-        row.innerHTML = `
-            <td><input type="checkbox" class="select-book" data-title="${book.title}"></td>
-            <td>
-                <a href="#" class="update-book-link" data-title="${book.title}" 
-                   data-author="${book.author}" data-year="${book.year}" data-quantity="${book.quantity}">
-                   ${book.title}
-                </a>
-            </td>
-            <td>${book.author || "N/A"}</td>
-            <td>${book.year || "N/A"}</td>
-            <td>${book.quantity || "N/A"}</td>
-        `;
-        tableBody.appendChild(row);
+            // Highlight borrowed books
+            if (book.isBorrowed) {
+                row.style.backgroundColor = 'orange'; // Highlight borrowed books with a different color
+            }
+
+            tableBody.appendChild(row);
+        });
     }
 });

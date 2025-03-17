@@ -19,7 +19,6 @@ namespace l5.Controllers
             _context = context;
             _userManager = userManager;
         }
-
         [HttpGet("get-books")]
         public async Task<IActionResult> GetBooks()
         {
@@ -80,7 +79,7 @@ namespace l5.Controllers
         }
 
         [HttpGet("{title}")]
-        public async Task<ActionResult<Book>> GetBook(string title)
+        public async Task<ActionResult<IEnumerable<Book>>> GetBook(string title)
         {
             //var book = await _context.Books.FirstOrDefaultAsync(b => b.Title == title);
             //if (book == null) return NotFound();
