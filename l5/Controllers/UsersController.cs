@@ -49,18 +49,20 @@ namespace l5.Controllers
         }
 
         [HttpGet("{username}")]
-        public async Task<ActionResult<UserDTO>> GetUser(string username)
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUser(string username)
         {
-            var user = await _userManager.FindByNameAsync(username);
-            if(user == null) return NotFound();
+            var users = await _context.Users.Where(u => u.UserName.Contains(username)).ToListAsync();
+            if (users == null || !users.Any()) return NotFound("No users exist matching the search query");
 
-            return new UserDTO
+            var results = users.Select(user => new UserDTO
             {
                 Username = user.UserName,
                 Role = user.Role,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber
-            };
+            }).ToList();
+
+            return Ok(results);
         }
 
         [HttpPost("add-user")]

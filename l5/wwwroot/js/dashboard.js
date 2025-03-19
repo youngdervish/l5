@@ -36,7 +36,7 @@ export async function fetchTokenExpiry() {
     try {
         fetch("api/jwt/token-expiry").then(res => res.json()).then(data => {
             console.log("Access Token in Expiry:", data.accessTokenExpiry),
-                accessTokenExpiry = new Date(data.accessTokenExpiry).getTime(),
+                accessTokenExpiry = new Date(data.accessTokenExpiry).getTime(), 
                 console.log("Refresh Token in Expiry:", data.refreshTokenExpiry),
                 refreshTokenExpiry = new Date(data.refreshTokenExpiry);
         }).catch(err => console.error(err));

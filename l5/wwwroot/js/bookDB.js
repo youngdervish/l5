@@ -493,5 +493,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             tableBody.appendChild(row);
         });
+
+        // Add event listeners for update-book links after dynamically generating the table rows
+        document.querySelectorAll(".update-book-link").forEach(link => {
+            link.addEventListener("click", function (event) {
+                event.preventDefault();
+                const title = this.getAttribute("data-title");
+                const author = this.getAttribute("data-author");
+                const year = this.getAttribute("data-year");
+                const quantity = this.getAttribute("data-quantity");
+
+                openUpdateBookOverlay(title, author, year, quantity); // Call your overlay function
+            });
+        });
     }
 });

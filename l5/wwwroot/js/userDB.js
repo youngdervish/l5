@@ -194,6 +194,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${user.username}
                 </a></td>
                 <td>${user.role}</td>
+                <td>${user.email}</td>
+                <td>${user.phoneNumber}</td>
             `;
                 tbody.appendChild(row);
             });
@@ -248,12 +250,13 @@ document.addEventListener("DOMContentLoaded", () => {
     async function searchUser() {
         const searchInput = document.getElementById("search-input").value.trim();
         if (!searchInput) {
-            alert("Please enter a username to search.");
-            loadUsers();
+            alert("please enter a username to search.");
+            loadusers();
             return;
         }
 
         try {
+            //const response = await fetch(`api/users/${encodeURIComponent(searchInput)}`, {
             const response = await fetch(`api/users/${encodeURIComponent(searchInput)}`, {
                 method: 'GET',
                 credentials: 'include' // Ensures cookies are sent for authentication
@@ -268,26 +271,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const user = await response.json();
-            console.log("Searched User: ", user); // Log the response
-            displaySearchedUser(user);
+            const users = await response.json();
+            console.log("Searched User: ", users); // Log the response
+
+            if (users.length == 0) {
+                alert("Search bar is empty");
+                return;
+            }   
+
+            displaySearchedUser(users);
 
         } catch (error) {
-            console.error("Error fetching user:", error);
-            alert("An error occurred while fetching the user.");
+            console.error("Error fetching users:", error);
+            alert("An error occurred while fetching the users.");
         }
     }
 
-    function displaySearchedUser(user) {
+    function displaySearchedUser(users) {
         const tableBody = document.getElementById("user-table-body");
 
         // Clear existing rows (optional, depends on desired behavior)
         tableBody.innerHTML = "";
 
-        // Create a new row
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
+        users.forEach(user => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
             <td><input type="checkbox" class="select-user" data-username="${user.username}"></td>
             <td>
                 <a href="#" class="update-user-link" data-username="${user.username}" 
@@ -297,9 +305,10 @@ document.addEventListener("DOMContentLoaded", () => {
             </td>
             <td>${user.role || "N/A"}</td>
             <td>${user.email || "N/A"}</td>
-            <td>${user.phoneNumber || "N/A"}</td>`;                     
+            <td>${user.phoneNumber || "N/A"}</td>`;
 
-        tableBody.appendChild(row);
+            tableBody.appendChild(row);
+        });
 
         // Add event listeners for the update-user link
         document.querySelectorAll(".update-user-link").forEach(link => {

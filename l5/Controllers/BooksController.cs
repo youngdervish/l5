@@ -81,19 +81,6 @@ namespace l5.Controllers
         [HttpGet("{title}")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBook(string title)
         {
-            //var book = await _context.Books.FirstOrDefaultAsync(b => b.Title == title);
-            //if (book == null) return NotFound();
-
-            //return new Book
-            //{
-            //    Title = book.Title,
-            //    Id=book.Id,
-            //    Author = book.Author,
-            //    Year = book.Year,
-            //    //Quantity = b.Quantity - _context.BorrowedBooks.Count(x => x.BookId == b.Id)
-            //    Quantity = book.Quantity - _context.BorrowedBooks.Count(x => x.Book.Title == book.Title)
-            //};
-
             var books = await _context.Books.Where(b => b.Title.Contains(title)).ToListAsync();
 
             if (books == null || !books.Any()) return NotFound();
@@ -104,7 +91,7 @@ namespace l5.Controllers
                 Id = book.Id,
                 Author = book.Author,
                 Year = book.Year,
-                Quantity = book.Quantity - _context.BorrowedBooks.Count(x => x.BookId == book.Id)
+                Quantity = book.Quantity
             }).ToList();
 
             return Ok(result);
