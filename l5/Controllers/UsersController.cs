@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using l5.Data;
-using l5.Models;
 using l5.DTOs;
 using Microsoft.AspNetCore.Identity;
+using l5.Core.Models;
 
 
 namespace l5.Controllers

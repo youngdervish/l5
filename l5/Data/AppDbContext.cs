@@ -1,8 +1,8 @@
-﻿using l5.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
+using l5.Core.Models;
 
 namespace l5.Data
 {

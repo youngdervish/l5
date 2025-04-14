@@ -1,11 +1,14 @@
-﻿using l5.Models;
-using Microsoft.AspNetCore.Http;
+﻿using l5.Core.Models;
+using l5.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 
 namespace l5.Controllers
@@ -16,100 +19,30 @@ namespace l5.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly UserManager<User> _userManager;
-        public JWTController(IConfiguration configuration, UserManager<User> userManager)
+        private readonly TokenService _tokenService;
+        public JWTController(IConfiguration configuration, UserManager<User> userManager, TokenService tokenService)
         {
             _configuration = configuration;
+            _tokenService = tokenService;
             _userManager = userManager;
-        }
-
-
-        public string GenerateAccessToken(User user)
-        {
-            var secretKey = _configuration["JwtSettings:Secret"];
-            //Console.WriteLine($"Secret Key: {secretKey}");
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            string jti = Guid.NewGuid().ToString();
-            Console.WriteLine("JTI => " + jti);
-
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, user.Role),
-                new Claim("jti", jti)
-            };
-
-            var accessTokenExpiry = DateTime.Now.AddMinutes(3);
-            //Console.WriteLine($"\n\nAccess Token Expiry: {accessTokenExpiry}\n\n");
-
-            var accessToken = new JwtSecurityToken(
-                issuer: "Erkin",
-                audience: "Bazar",
-                claims: claims,
-                expires: accessTokenExpiry,
-                signingCredentials: credentials);
-
-            var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
-            Console.WriteLine("The NEW ACCESS TOKEN BELOW");
-            Console.WriteLine(accessTokenString);
-            Console.WriteLine("THE NEW ACCESS TOKEN ABOVE");
-
-            return accessTokenString;
-        }
-
-        public (string RefreshToken, DateTime Expiry) GenerateRefreshToken()
-        {
-            var refreshToken = Guid.NewGuid().ToString();
-            var expiry = DateTime.Now.AddMinutes(5);
-            return (refreshToken, expiry);
         }
 
         [HttpPost("rotate-tokens")]
         public async Task<IActionResult> RotateTokens()//[FromBody] RotateTokenRequest request)
         {
-            //var refreshToken = request.RefreshToken;
-            var refreshToken = Request.Cookies["refreshToken"];
+            var oldRefreshToken = Request.Cookies["refreshToken"];
 
-            Console.WriteLine($"\n\nPrinting refresh token prior to rotation: {refreshToken} \n\n");
-            if (string.IsNullOrEmpty(refreshToken)) return Unauthorized("Refresh token is required.");
-
-            var user = _userManager.Users.FirstOrDefault(u => u.RefreshToken == refreshToken);
-            Console.WriteLine($"\n\nRotation request coming from user named: {user?.UserName}");
-            if (user == null) return Unauthorized("Invalid refresh token");
-            if (user.RefreshTokenExpiry < DateTime.Now) return Unauthorized("Refresh token has expired. Please log in again.");
-
-
-            var newAccessToken = GenerateAccessToken(user);
-            Console.WriteLine($"\n\nNew Rotated Access Token: {newAccessToken}\n\n");
-            (user.RefreshToken, user.RefreshTokenExpiry) = GenerateRefreshToken();
-            Console.WriteLine($"\n\nNew Rotated Refresh Token: {user.RefreshToken}\n\n");
-
-            try { await _userManager.UpdateAsync(user); }
+            try
+            {
+                var (accessToken, newRefreshToken, newRefreshTokenExpiry) = await _tokenService.RotateTokens(oldRefreshToken);
+                Response.Cookies.Append("accessToken", accessToken, new CookieOptions { HttpOnly = true, Expires = DateTime.UtcNow.AddMinutes(30)});
+                Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions { HttpOnly = true, Expires = newRefreshTokenExpiry});
+                return Ok(new {Message = "Tokens rotated successfully" });
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error updating the user: {ex.Message}");
-                return StatusCode(500, "An error occurred while attempting the refresh token.");
+                return Unauthorized(new {Error = ex.Message});
             }
-
-            Response.Cookies.Append("accessToken", newAccessToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.Now.AddMinutes(3)
-            });
-            Response.Cookies.Append("refreshToken", user.RefreshToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = user.RefreshTokenExpiry
-            });
-
-            Console.WriteLine("New Refresh Token: " + user.RefreshTokenExpiry);
-            return Ok(new { Message = "Tokens rotated successfully." });
-            //return Ok(new { AccessToken = newAccessToken , RefreshToken = user.RefreshToken });
         }
 
         [HttpGet("token-expiry")]

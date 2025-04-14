@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using l5.Models;
+using l5.Core.Models;
 
 namespace l5.Utilities
 {

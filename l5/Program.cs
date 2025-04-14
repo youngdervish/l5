@@ -1,21 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using l5.Data;
 using Microsoft.AspNetCore.Identity;
-using l5.Models;
 using l5.Utilities;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using l5.Controllers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using l5.Core.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MySqlConnection")));
 
 builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
-
-//builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -32,7 +29,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = "Erkin",
         ValidAudience = "Bazar",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"])),
+        ClockSkew = TimeSpan.Zero
     };
 
     options.Events = new JwtBearerEvents
@@ -44,6 +42,11 @@ builder.Services.AddAuthentication(options =>
             {
                 context.Token = cookieToken;
             }
+            return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine("JWT validation failed: " + context.Exception.Message);
             return Task.CompletedTask;
         }
     };
@@ -66,7 +69,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddScoped<JWTController>();
+builder.Services.AddScoped<TokenController>();
 
 
 builder.Services.AddControllers();
@@ -104,7 +107,6 @@ app.Use(async (context, next) =>
 app.UseStaticFiles();
 
 
-
 app.UseRouting();
 
 app.UseCors("AllowAll");
@@ -121,58 +123,3 @@ app.MapControllers();
 app.MapRazorPages();
 
 app.Run();
-
-
-
-
-#region v1
-
-
-
-//builder.Services.AddIdentity<User, IdentityRole>(options =>
-//{
-//    options.Password.RequireDigit = false;
-//    options.Password.RequiredLength = 6;
-//    options.Password.RequireNonAlphanumeric = false;  // Allow passwords without non-alphanumeric characters
-//}).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
-
-
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
-
-//public void ConfigureServices(IServiceCollection services)        where does this go
-//{
-//    services.AddIdentity<User, IdentityRole>()
-//            .AddEntityFrameworkStores<AppDbContext>()
-//            .AddDefaultTokenProviders();
-//}
-
-//public static IHostBuilder CreateHostBuilder(string[] args) =>
-//    Host.CreateDefaultBuilder(args)
-//        .ConfigureWebHostDefaults(webBuilder =>
-//        {
-//            webBuilder.UseStartup<Startup>();
-//        })
-//        .ConfigureServices((hostContext, services) =>
-//        {
-//            services.AddTransient<DataSeeder>();
-//        })
-//        .ConfigureAppConfiguration((context, config) =>
-//        {
-//            var serviceProvider = services.BuildServiceProvider();
-//            var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
-//            DataSeeder.SeedAsync(serviceProvider, userManager).Wait();
-//        });
-
-// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    //app.useswagger();
-//    //app.useswaggerui();
-//    app.UseExceptionHandler("/Error");
-//    app.UseHsts();
-//}
-
-#endregion
