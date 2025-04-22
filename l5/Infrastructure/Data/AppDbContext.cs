@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using l5.Core.Models;
 
-namespace l5.Data
+namespace l5.Infrastructure.Data
 {
     public class AppDbContext : IdentityDbContext<User, IdentityRole, string> //DbContext
     {

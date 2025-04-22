@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using l5.Data;
-using l5.DTOs;
-using Microsoft.AspNetCore.Identity;
 using l5.Core.Models;
+using l5.Application.DTOs;
+using l5.Core.Interfaces;
+
 
 
 namespace l5.Controllers
@@ -14,31 +13,20 @@ namespace l5.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUserService _userService;
 
-        public UsersController(AppDbContext context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+        public UsersController(IUserService userService)
         {
-            _context = context;
-            _userManager = userManager;
-            _roleManager = roleManager;
+            _userService = userService;
         }
 
         [HttpGet("get-users")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUsers()
         {
             try
             {
-                var users = await _userManager.Users
-                    .Select(u => new UserDTO
-                    {
-                        Username = u.UserName,
-                        Email = u.Email,
-                        PhoneNumber = u.PhoneNumber,
-                        Role = u.Role
-                    })
-                    .ToListAsync();
+                var users = await _userService.GetUsersAsync();
 
                 return Ok(users);
             }
@@ -49,145 +37,73 @@ namespace l5.Controllers
         }
 
         [HttpGet("{username}")]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUser(string username)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> Search(string username)
         {
-            var users = await _context.Users.Where(u => u.UserName.Contains(username)).ToListAsync();
-            if (users == null || !users.Any()) return NotFound("No users exist matching the search query");
+            var users = await _userService.SearchUsersAsync(username);
+            //if (users == null || !users.Any()) return NotFound("No users exist matching the search query");
 
-            var results = users.Select(user => new UserDTO
-            {
-                Username = user.UserName,
-                Role = user.Role,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber
-            }).ToList();
-
-            return Ok(results);
+            return Ok(users);
         }
 
         [HttpPost("add-user")]
-        public async Task<ActionResult<UserDTO>> AddUser([FromBody] User user, [FromQuery] string password)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<UserDTO>> AddUser([FromBody] CreateUserDTO createUserDto)
         {
-            if (await _userManager.FindByNameAsync(user.UserName) != null)
-                return BadRequest("Username already exists");
-
-            var result = await _userManager.CreateAsync(user, password);
-            if (!result.Succeeded) return BadRequest(result.Errors);
-
-            if (!string.IsNullOrEmpty(user.Role))
+            try
             {
-                if (!await _roleManager.RoleExistsAsync(user.Role))
-                    await _roleManager.CreateAsync(new IdentityRole(user.Role));
-                await _userManager.AddToRoleAsync(user, user.Role);
+                var createdUser = await _userService.AddUserAsync(createUserDto);
+                if (createdUser == null)
+                    return BadRequest("Username already exists or user creation failed.");
+                return Ok(createdUser);
             }
-
-            var userDTO = new UserDTO()
+            catch (Exception ex)
             {
-                Username = user.UserName,
-                Role = user.Role,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber
-            };
-
-            return CreatedAtAction(nameof(GetUser), new { username = user.UserName }, userDTO);
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
-        [HttpPut("{username}")]
-        public async Task<IActionResult> UpdateUser(string username, [FromBody] User updatedUser)
+        [HttpPut("update/{username}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateUser(string username, [FromBody] UpdateUserDTO updateUserDto)
         {
-            var existingUser = await _userManager.FindByNameAsync(username);
-            if (existingUser == null) return NotFound();
-
-            bool isUpdated = false;
-
-            // Update Email
-            if (!string.IsNullOrEmpty(updatedUser.Email) && updatedUser.Email != existingUser.Email)
+            try
             {
-                existingUser.Email = updatedUser.Email;
-                isUpdated = true;
-            }
+                var updatedUser = await _userService.UpdateUserAsync(username, updateUserDto);
+                //var result = await _userService.UpdateUserAsync(username, updateUserDto);
+                //if (!result) return NotFound("User not found or no changes detected.");
 
-            // Update PhoneNumber
-            if (!string.IsNullOrEmpty(updatedUser.PhoneNumber) && updatedUser.PhoneNumber != existingUser.PhoneNumber)
+                return Ok(updateUserDto);
+            }
+            catch (Exception ex)
             {
-                existingUser.PhoneNumber = updatedUser.PhoneNumber;
-                isUpdated = true;
+                return NotFound(new { error = ex.Message });
             }
-
-            // Update Role
-            if (!string.IsNullOrEmpty(updatedUser.Role))
-            {
-                existingUser.Role = updatedUser.Role;
-                isUpdated = true;
-            }
-
-            // Update Password if provided
-//            Console.WriteLine("\n\n Updated Password: " + updatedUser.PasswordHash);
-
-            if (!string.IsNullOrEmpty(updatedUser.PasswordHash))
-            {
-                // Decode the password to ensure no issues with encoded characters
-                var decodedPassword = Uri.UnescapeDataString(updatedUser.PasswordHash);  // Decoding the encoded password
-
-                Console.WriteLine("\n\n Updated Password: " + decodedPassword + "\n\n");
-                // Hash the decoded password
-                var passwordHasher = new PasswordHasher<User>();
-                var hashedPassword = passwordHasher.HashPassword(existingUser, decodedPassword);
-
-                // Update the user's password hash
-                existingUser.PasswordHash = hashedPassword;
-                isUpdated = true;
-            }
-
-            // If no changes were made, return 304 Not Modified
-            if (!isUpdated) return StatusCode(304);
-
-            // Save changes
-            var result = await _userManager.UpdateAsync(existingUser);
-            if (!result.Succeeded) return BadRequest(result.Errors);
-
-            return NoContent();
         }
 
-        [HttpDelete]
+        [HttpDelete("delete-users")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser([FromBody] List<string> usernames)
         {
-            var usersToDelete = _userManager.Users.Where(u => usernames.Contains(u.UserName)).ToList();
-            if (!usersToDelete.Any()) return NotFound();
-
-            foreach (var user in usersToDelete)
-            {
-                await _userManager.DeleteAsync(user);
-            }
-
-            return NoContent();
+            var result =  await _userService.DeleteUserAsync(usernames);
+            return result ? Ok("Users deleted successfully") : NotFound("No user deleted");
         }
 
         [HttpGet("getUsername")]
+        [Authorize]
         public IActionResult GetUsername()
         {
-            var username = User.Identity.Name; // Get the username from the authenticated user
-            if (username == null)
-            {
-                return Unauthorized(); // Return 401 if the user is not logged in
-            }
-
+            var username = _userService.GetUsername(User);
+            if (string.IsNullOrEmpty(username))
+                return NotFound("Username not found.");
             return Ok(new { username });
         }
 
         [HttpGet("getUserRole")]
+        [Authorize]
         public IActionResult GetUserRole()
         {
-            var username = User.Identity.Name;
-            var role = _context.Users
-                                .Where(u => u.UserName == username)
-                                .Select(u => u.Role)  // Assuming your role is stored in the User table
-                                .FirstOrDefault();
-            Console.WriteLine($"The user Role is {role}");
-            if (role == null)
-            {
-                return Unauthorized("User role not found.");
-            }
+            var role = _userService.GetUserRole(User);
             return Ok(new { role });
         }
     }

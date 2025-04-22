@@ -1,4 +1,4 @@
-﻿namespace l5.DTOs
+﻿namespace l5.Application.DTOs
 {
     public class AuthDTO
     {

@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 
-namespace l5.Services
+namespace l5.Application.Services
 {
     public class TokenService : ITokenService
     {
@@ -75,7 +75,7 @@ namespace l5.Services
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtToken = tokenHandler.ReadJwtToken(accessToken);
-            
+
             var usernameClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
             if (usernameClaim != null)
             {

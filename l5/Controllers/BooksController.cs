@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
-using l5.Data;
-using l5.DTOs;
 using Microsoft.EntityFrameworkCore;
 using l5.Core.Models;
+using l5.Application.DTOs;
+using l5.Infrastructure.Data;
 
 namespace l5.Controllers
 {

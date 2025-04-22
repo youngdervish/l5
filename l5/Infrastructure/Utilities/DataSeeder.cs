@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using l5.Core.Models;
 
-namespace l5.Utilities
+namespace l5.Infrastructure.Utilities
 {
     public class DataSeeder
     {
@@ -14,7 +14,7 @@ namespace l5.Utilities
 
             foreach (var role in roles)
             {
-                if(await roleManager.FindByNameAsync(role) == null)
+                if (await roleManager.FindByNameAsync(role) == null)
                 {
                     var roleResult = await roleManager.CreateAsync(new IdentityRole(role));
                     if (!roleResult.Succeeded)

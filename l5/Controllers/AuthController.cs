@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using l5.DTOs;
+using l5.Application.DTOs;
 using Microsoft.AspNetCore.Identity;
 using l5.Core.Models;
 using l5.Core.Interfaces;
+using System.Security.Claims;
+using l5.Application.DTOs;
 
 
 namespace l5.Controllers
@@ -69,8 +71,7 @@ namespace l5.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
-                //_logger.LogError(ex, "An error occurred during the login process.");
+                _logger.LogError(ex.Message, "An error occurred during the login process.");
                 Console.WriteLine(ex.Message);
                 return StatusCode(500, new { message = "Internal Server Error", details = ex.Message });
             }
@@ -80,6 +81,18 @@ namespace l5.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> LogOut()
         {
+            var username = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+
+            if (username == null)
+            {
+                var user = await _userManager.FindByNameAsync(username);
+                if (user == null)
+                {
+                    await _tokenService.RevokeRefreshToken(user.Id);
+                    _logger.LogInformation($"{user.UserName} logged out and the belonging refresh token revoked");
+                }
+            }
+
             var expiredCookie = new CookieOptions
             {
                 HttpOnly = true,
@@ -91,7 +104,6 @@ namespace l5.Controllers
             Response.Cookies.Append("accessToken", "", expiredCookie);
             Response.Cookies.Append("refreshToken", "", expiredCookie);
 
-            //_logger.LogInformation($"logged out successfully");             // how to get the username
             return Ok(new { message = "Logged out successfully" });
         }
     }

@@ -1,5 +1,4 @@
 ﻿using l5.Core.Models;
-using l5.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -9,6 +8,7 @@ using System.Text;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using l5.Application.Services;
 
 
 namespace l5.Controllers
@@ -49,18 +49,19 @@ namespace l5.Controllers
         public async Task<IActionResult> GetTokenExpiry()
         {
             var accessToken = Request.Cookies["accessToken"];
-            var uName = GetUserViaAccessToken(accessToken);
+            var uName = _tokenService.GetUserViaAccessToken(accessToken);
             if (uName == null) return NotFound(new { message = "User UNAUTHENTICATED!!!" });
             var user = await _userManager.FindByNameAsync(uName);
             if (user == null) return NotFound(new { message = "User is NOT found!!!" });
 
             return Ok(new
             {
-                AccessTokenExpiry = GetAccessTokenExpiry(),
+                AccessTokenExpiry = _tokenService.GetAccessTokenExpiry(accessToken),
                 user.RefreshTokenExpiry
             });
         }
 
+        /*
         private DateTime GetAccessTokenExpiry()
         {
             var token = Request.Cookies["accessToken"];
@@ -115,6 +116,7 @@ namespace l5.Controllers
                 return BadRequest(new { role = "Guest", error = "Invalid token" });
             }
         }
+        */
 
         [HttpGet("print-access-token")]
         public IActionResult PrintAccessToken()

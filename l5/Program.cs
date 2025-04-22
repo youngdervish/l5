@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using l5.Data;
 using Microsoft.AspNetCore.Identity;
-using l5.Utilities;
 using l5.Controllers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using l5.Core.Models;
+using l5.Infrastructure.Utilities;
+using l5.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,8 +68,6 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:5000").AllowCredentials().AllowAnyMethod().AllowAnyHeader();
     });
 });
-
-builder.Services.AddScoped<TokenController>();
 
 
 builder.Services.AddControllers();
