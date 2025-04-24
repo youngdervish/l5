@@ -56,8 +56,10 @@ namespace l5.Controllers
 
             return Ok(new
             {
-                AccessTokenExpiry = _tokenService.GetAccessTokenExpiry(accessToken),
-                user.RefreshTokenExpiry
+                //AccessTokenExpiry = _tokenService.GetAccessTokenExpiry(accessToken),
+                //user.RefreshTokenExpiry
+                accessTokenExpiry = _tokenService.GetAccessTokenExpiry(accessToken), 
+                refreshTokenExpiry = user.RefreshTokenExpiry?.ToUniversalTime()
             });
         }
 

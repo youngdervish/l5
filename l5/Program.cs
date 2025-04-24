@@ -7,12 +7,15 @@ using System.Text;
 using l5.Core.Models;
 using l5.Infrastructure.Utilities;
 using l5.Infrastructure.Data;
+using l5.Application.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MySqlConnection")));
 
 builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+
+builder.Services.AddAutoMapper(typeof(UserMappingProfile)); // Is this the correct place for adding the AutoMapper?
 
 builder.Services.AddAuthentication(options =>
 {

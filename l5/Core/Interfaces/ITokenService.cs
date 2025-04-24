@@ -7,7 +7,7 @@ namespace l5.Core.Interfaces
     {
         string GenerateAccessToken(User user);
         Task<(string RefreshToken, DateTime Expiry)> GenerateRefreshToken(string userId);
-        string GetAccessTokenExpiry(string accessToken);
+        DateTime GetAccessTokenExpiry(string accessToken);
         string GetUserViaAccessToken(string accessToken);
         Task RevokeRefreshToken(string userId);
         Task<(string AccessToken, string RefreshToken, DateTime RefreshTokenExpiry)> RotateTokens(string accessToken);

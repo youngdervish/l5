@@ -53,8 +53,8 @@ namespace l5.Controllers
             try
             {
                 var createdUser = await _userService.AddUserAsync(createUserDto);
-                if (createdUser == null)
-                    return BadRequest("Username already exists or user creation failed.");
+                //if (createdUser == null)
+                //    return BadRequest("Username already exists or user creation failed.");
                 return Ok(createdUser);
             }
             catch (Exception ex)

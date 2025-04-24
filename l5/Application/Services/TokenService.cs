@@ -71,7 +71,7 @@ namespace l5.Application.Services
             else { _logger.LogWarning($"Failed to revoke the refresh token. User NOT found!!!"); }
         }
 
-        public string GetAccessTokenExpiry(string accessToken)
+        public DateTime GetAccessTokenExpiry(string accessToken)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtToken = tokenHandler.ReadJwtToken(accessToken);
@@ -84,7 +84,7 @@ namespace l5.Application.Services
             }
             else _logger.LogError("Username NOT found in the access token for acquiring the Access Token Expiry");
 
-            return jwtToken.ValidTo.ToString();
+            return jwtToken.ValidTo.ToUniversalTime();
         }
 
         public string GetUserViaAccessToken(string accessToken)

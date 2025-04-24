@@ -1,4 +1,6 @@
-﻿using l5.Application.DTOs;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using l5.Application.DTOs;
 using l5.Core.Interfaces;
 using l5.Core.Models;
 using l5.Infrastructure.Data;
@@ -9,26 +11,32 @@ namespace l5.Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly AppDbContext _context;
+        //private readonly AppDbContext _context;
+        private readonly ILogger _logger;
         private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IMapper _mapper;
+        //private readonly RoleManager<IdentityRole> _roleManager;
 
-        public UserService(AppDbContext context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+        public UserService(UserManager<User> userManager, IMapper mapper, ILogger logger)//AppDbContext context, RoleManager<IdentityRole> roleManager)
         {
-            _context = context;
+            //_context = context;
             _userManager = userManager;
-            _roleManager = roleManager;
+            _logger = logger;
+            _mapper = mapper;
+            //_roleManager = roleManager;
         }
 
         public async Task<List<UserDTO>> GetUsersAsync()
         {
-            return await _userManager.Users.Select(u => new UserDTO
-            {
-                Username = u.UserName,
-                Email = u.Email,
-                PhoneNumber = u.PhoneNumber,
-                Role = u.Role
-            }).ToListAsync();
+            //return await _userManager.Users.Select(u => new UserDTO
+            //{
+            //    Username = u.UserName,
+            //    Email = u.Email,
+            //    PhoneNumber = u.PhoneNumber,
+            //    Role = u.Role
+            //}).ToListAsync();
+
+            return await _mapper.ProjectTo<UserDTO>(_userManager.Users).ToListAsync();
         }
 
         public async Task<List<UserDTO>> SearchUsersAsync(string username)
@@ -43,13 +51,17 @@ namespace l5.Application.Services
 
             // above vs below?
 
-            var users = await _userManager.Users.Where(u => u.UserName.Contains(username)).Select(user => new UserDTO
-            {
-                Username = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                Role = user.Role
-            }).ToListAsync();
+            //var users = await _userManager.Users.Where(u => u.UserName.Contains(username)).Select(user => new UserDTO
+            //{
+            //    Username = user.UserName,
+            //    Email = user.Email,
+            //    PhoneNumber = user.PhoneNumber,
+            //    Role = user.Role
+            //}).ToListAsync();
+
+            var users = await _userManager.Users
+                .Where(u => u.UserName.Contains(username))
+                .ProjectTo<UserDTO>(_mapper.ConfigurationProvider).ToListAsync();
 
             if (users == null || !users.Any())
                 throw new Exception("No users exist matching the search query.");
@@ -72,26 +84,33 @@ namespace l5.Application.Services
             
             await _userManager.AddToRoleAsync(user, user.Role);
 
-            return new UserDTO
-            {
+            return _mapper.Map<UserDTO>(user);
 
-                Username = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                Role = user.Role
-            };
+            //return new UserDTO
+            //{
+
+            //    Username = user.UserName,
+            //    Email = user.Email,
+            //    PhoneNumber = user.PhoneNumber,
+            //    Role = user.Role
+            //};
         }
         public async Task<UserDTO?> AddUserAsync(CreateUserDTO dto)
         {
-            var user = new User
-            {
-                UserName = dto.Username,
-                Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
-                Role = dto.Role
-            };
+            var user = _mapper.Map<User>(dto);
+            var result = await _userManager.CreateAsync(user, dto.Password);
+            if (!result.Succeeded) return null;
+            return _mapper.Map<UserDTO>(user);
 
-            return await AddUserAsync(user, dto.Password);
+            //var user = new User
+            //{
+            //    UserName = dto.Username,
+            //    Email = dto.Email,
+            //    PhoneNumber = dto.PhoneNumber,
+            //    Role = dto.Role
+            //};
+
+            //return await AddUserAsync(user, dto.Password);
         }
 
         public async Task<bool> UpdateUserAsync(string username, User updatedUser)
@@ -165,25 +184,38 @@ namespace l5.Application.Services
                 throw new Exception($"User update failed: {errors}");
             }
 
-            return new UserDTO
-            {
-                Username = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                Role = user.Role
-            };
+            return _mapper.Map<UserDTO>(user);
+
+            //return new UserDTO
+            //{
+            //    Username = user.UserName,
+            //    Email = user.Email,
+            //    PhoneNumber = user.PhoneNumber,
+            //    Role = user.Role
+            //};
         }
 
         public async Task<bool> DeleteUserAsync(List<string> usernames)
         {
-            var usersToDelete = _userManager.Users.Where(u => usernames.Contains(u.UserName)).ToList();
-            if (!usersToDelete.Any()) return false;
+            var usersToDelete = await _userManager.Users.Where(u => usernames.Contains(u.UserName)).ToListAsync();
+            if (!usersToDelete.Any())
+            {
+                _logger.LogWarning("No matches found for deletion");
+                return false;
+            }
 
             foreach (var user in usersToDelete)
             {
-                await _userManager.DeleteAsync(user);
+                var result = await _userManager.DeleteAsync(user);
+                if(!result.Succeeded)
+                {
+                    var errors = string.Join("; ", result.Errors.Select(_e => _e.Description));
+                    _logger.LogError("Failed to delete user {Username}. Error: {Errors}", user.UserName, errors);
+                    continue;
+                    //throw new Exception($"Failed to delete user {user.UserName}: {errors}");
+                }
+                _logger.LogInformation("User deleted: {Username}", user.UserName);
             }
-
             return true;
         }
 
@@ -191,9 +223,15 @@ namespace l5.Application.Services
 
         public string? GetUserRole(System.Security.Claims.ClaimsPrincipal user)
         {
-            var username = GetUserRole(user); //user.Identity?.Name;
+            var username = GetUsername(user); //user.Identity?.Name;
             //return _context.Users.Where(u => u.UserName == username).Select(u => u.Role).FirstOrDefault();
             return _userManager.Users.Where(u => u.UserName == username).Select(u => u.Role).FirstOrDefault();
+        }
+
+        public string? GetUserEmail(System.Security.Claims.ClaimsPrincipal user)
+        {
+            var username = GetUsername(user);
+            return _userManager.Users.Where(u => u.UserName == username).Select(u => u.Email).FirstOrDefault();
         }
     }
 }

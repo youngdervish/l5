@@ -1,20 +1,13 @@
 Q's
-1) 
+Token Expiry for Frontend
+1) Which is the better practice for showing token expiry timer?
+	a) Extract the timer from the moment token is created?
+	b) Extract the timer from the db?
+	c) Extract the timer from the cookie?
+---->   d) Pass the timer to frontend and countdown there?
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Logger
+2) Serilog vs FileLogger for log file?
 
 
 

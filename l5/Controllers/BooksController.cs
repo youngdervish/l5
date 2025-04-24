@@ -12,12 +12,12 @@ namespace l5.Controllers
     public class BooksController : ControllerBase
     {
         private readonly AppDbContext _context;
-        private readonly UserManager<User> _userManager;
+        //private readonly UserManager<User> _userManager;
 
-        public BooksController(AppDbContext context, UserManager<User> userManager)
+        public BooksController(AppDbContext context)//, UserManager<User> userManager)
         {
             _context = context;
-            _userManager = userManager;
+            //_userManager = userManager;
         }
         [HttpGet("get-books")]
         public async Task<IActionResult> GetBooks()
