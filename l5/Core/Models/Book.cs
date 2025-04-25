@@ -11,6 +11,7 @@ namespace l5.Core.Models
         [Required]
         public string Author { get; set; }
         public int Year { get; set; }
+        [Range(0, int.MaxValue)]
         public int Quantity { get; set; }
     }
 }
