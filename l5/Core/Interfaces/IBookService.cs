@@ -6,10 +6,11 @@ namespace l5.Core.Interfaces
     {
         Task<IEnumerable<BookResponseDTO>> GetAllBooksAsync();
         Task<BookResponseDTO?> GetBookByIdAsync(int id);
-        Task<IEnumerable<BookDTO>> SearchBooksByTitleAsync(string title);
+        Task<IEnumerable<BookResponseDTO>> SearchBooksByTitleAsync(string title);
         Task<BookResponseDTO> AddBookAsync(BookDTO bookDTO);
         Task<BookResponseDTO?> UpdateBookAsync(int id, BookDTO bookDTO);
         Task<bool> DeleteBookAsync(int id);
         Task<string> BorrowBookAsync(int bookId, string username);
+        Task<bool> ReturnBorrowedBookAsync(int bookId, string username);
     }
 }
